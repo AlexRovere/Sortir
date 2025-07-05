@@ -14,14 +14,14 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\HasLifecycleCallbacks]
 class Event
 {
-    public const string CREATED = 'CREATED';
-    public const string OPENED = 'OPENED';
-    public const string CLOSED = 'CLOSED';
-    public const string PROCESSING = 'PROCESSING';
-    public const string FINISHED = 'FINISHED';
-    public const string CANCELLED = 'CANCELLED';
+    public const CREATED = 'CREATED';
+    public const OPENED = 'OPENED';
+    public const CLOSED = 'CLOSED';
+    public const PROCESSING = 'PROCESSING';
+    public const FINISHED = 'FINISHED';
+    public const CANCELLED = 'CANCELLED';
 
-    public const array VALID_STATES = [
+    public const VALID_STATES = [
         self::CREATED,
         self::OPENED,
         self::CLOSED,
@@ -301,7 +301,7 @@ class Event
     #[ORM\PrePersist()]
     public function prepersist(): void
     {
-        if($this->isPublished()) {
+        if ($this->isPublished()) {
             $this->setState($this::OPENED);
         } else {
             $this->setState($this::CREATED);
