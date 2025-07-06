@@ -1,0 +1,25 @@
+FROM node:20-alpine
+
+# Installation des dépendances système
+RUN apk add --no-cache git
+
+# Définition du répertoire de travail
+WORKDIR /var/www/html
+
+# Copie des fichiers de dépendances Node.js
+COPY package*.json ./
+
+# Installation des dépendances
+RUN npm ci
+
+# Copie du code source
+COPY . .
+
+# Exposition du port Vite
+EXPOSE 5173
+
+# Configuration pour accepter les connexions externes
+ENV HOST=0.0.0.0
+
+# Commande par défaut
+CMD ["npm", "run", "dev"]

@@ -7,6 +7,7 @@ use App\Entity\User;
 use App\Form\UserType;
 use App\Form\UserUploadType;
 use App\Helper\UploadFile;
+use App\Repository\StatsRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -23,7 +24,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class UserController extends AbstractController
 {
 
-    #[Route('/detail/{userId}', name: 'detail',requirements: ['userId' => '\d+'])]
+    #[Route('/detail/{userId}', name: 'detail', requirements: ['userId' => '\d+'])]
     public function detail(int $userId, UserRepository $userRepository): Response
     {
         $currentUser = $this->getUser();
@@ -35,7 +36,7 @@ final class UserController extends AbstractController
         }
 
         if ($user->getId() !== $userId) {
-            throw $this->createAccessDeniedException( 'Vous n\'avez pas la permission de consulter ce profil');
+            throw $this->createAccessDeniedException('Vous n\'avez pas la permission de consulter ce profil');
         }
 
         if (!$user) {
@@ -81,7 +82,7 @@ final class UserController extends AbstractController
             $em->flush();
             $this->addFlash('success', 'Utilisateur modifié avec succès');
 
-            return $this->redirectToRoute('app_user_detail', ['userId'=>$user->getId()]);
+            return $this->redirectToRoute('app_user_detail', ['userId' => $user->getId()]);
         }
 
         return $this->render('user/update.html.twig', [
@@ -153,12 +154,12 @@ final class UserController extends AbstractController
                         continue;
                     }
                 }
-                    fclose($handle);
-                    $em->flush();
-                    $this->addFlash('success', 'Utilisateurs importés avec succès');
-                    return $this->redirectToRoute('app_user_list');
-                }
+                fclose($handle);
+                $em->flush();
+                $this->addFlash('success', 'Utilisateurs importés avec succès');
+                return $this->redirectToRoute('app_user_list');
             }
+        }
 
         return $this->render('user/import.html.twig', [
             'form' => $form,
@@ -185,7 +186,7 @@ final class UserController extends AbstractController
     #[Route('/desactivate/{userId}', name: 'desactivate', requirements: ['userId' => '\d+'])]
     public function desactivate(int $userId, UserRepository $userRepository, EntityManagerInterface $em): Response
     {
-        if(!$this->isGranted('ROLE_ADMIN')) {
+        if (!$this->isGranted('ROLE_ADMIN')) {
             throw $this->createAccessDeniedException("Accès interdit");
         }
 
@@ -201,7 +202,7 @@ final class UserController extends AbstractController
     #[Route('/activate/{userId}', name: 'activate', requirements: ['userId' => '\d+'])]
     public function activate(int $userId, UserRepository $userRepository, EntityManagerInterface $em): Response
     {
-        if(!$this->isGranted('ROLE_ADMIN')) {
+        if (!$this->isGranted('ROLE_ADMIN')) {
             throw $this->createAccessDeniedException("Accès interdit");
         }
 
@@ -217,14 +218,37 @@ final class UserController extends AbstractController
     #[Route('/delete/{userId}', name: 'delete', requirements: ['userId' => '\d+'])]
     public function delete(int $userId, UserRepository $userRepository, EntityManagerInterface $em): Response
     {
-        if(!$this->isGranted('ROLE_ADMIN')) {
+        if (!$this->isGranted('ROLE_ADMIN')) {
             throw $this->createAccessDeniedException("Accès interdit");
         }
         $user = $userRepository->findUserById($userId);
 
-       $em->remove($user);
-       $em->flush();
+        $em->remove($user);
+        $em->flush();
         $this->addFlash('success', "Le compte de l'utilisateur {$user->getFirstname()} a bien été supprimé");
         return $this->redirectToRoute("app_user_list");
+    }
+
+
+    #[Route('/stats', name: 'stats')]
+    #[IsGranted("ROLE_ADMIN")]
+    public function stats(StatsRepository $statsRepository): Response
+    {
+        $globalStats = $statsRepository->getGlobalStats();
+
+        $globalStatslabels = array_keys($globalStats);
+        $globalStatsvalues = array_values($globalStats);
+
+        $userBySite = $statsRepository->getUserBySite();
+
+        $userBySitelabels = array_keys($userBySite);
+        $userBySitevalues = array_values($userBySite);
+
+        return $this->render('user/stats.html.twig', [
+            'globalStatsLabels' => $globalStatslabels,
+            'globalStatsValues' => $globalStatsvalues,
+            'userBySiteLabels' => $userBySitelabels,
+            'userBySiteValues' => $userBySitevalues
+        ]);
     }
 }

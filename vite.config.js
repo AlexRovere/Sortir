@@ -3,17 +3,18 @@ import symfonyPlugin from "vite-plugin-symfony";
 import vuePlugin from "@vitejs/plugin-vue";
 import tailwindcss from '@tailwindcss/vite'
 
-
 export default defineConfig({
-
     server: {
-        host: '127.0.0.1',
-        hmr: true,
+        host: '0.0.0.0',
+        port: 5173,
+        hmr: {
+            host: 'localhost',
+            port: 5173
+        },
         watch: {
-            usePolling: false,
+            usePolling: true,
             include: ['**/*.php', '**/*.twig']
         }
-
     },
     plugins: [
         vuePlugin(),
@@ -37,6 +38,8 @@ export default defineConfig({
         }
     ],
     build: {
+        outDir: 'public/build',
+        manifest: true,
         rollupOptions: {
             input: {
                 app: "./assets/app.js",
