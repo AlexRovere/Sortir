@@ -18,16 +18,16 @@ class EventFixtures extends Fixture implements DependentFixtureInterface
         $faker = Factory::create('fr_FR');
         $privateEventId = 0;
 
-        for ($i = 0; $i < 10; $i++) {
+        for ($i = 0; $i < 20; $i++) {
             $event = new Event();
 
             $event->setName($faker->word());
             $event->setDescription($faker->text());
             $event->setMaxParticipant($faker->numberBetween(1, 100));
             $event->setIsPublished($faker->boolean());
-            if ($event->isPublished()){
+            if ($event->isPublished()) {
                 $eventCancelled = $faker->boolean();
-                if ($eventCancelled){
+                if ($eventCancelled) {
                     $event->setState(Event::CANCELLED);
                 } else {
                     $event->setState(Event::OPENED);
@@ -39,8 +39,8 @@ class EventFixtures extends Fixture implements DependentFixtureInterface
             // Groupe privé
             $event->setIsPrivate($faker->boolean());
 
-            if($event->isPrivate()) {
-                $this->setReference('private_event_'. $privateEventId, $event);
+            if ($event->isPrivate()) {
+                $this->setReference('private_event_' . $privateEventId, $event);
                 $privateEventId++;
             }
 
@@ -57,20 +57,20 @@ class EventFixtures extends Fixture implements DependentFixtureInterface
 
             // Ajouter des participants
             for ($x = 0; $x < rand(1, 5); $x++) {
-                $user = $this->getReference('user_'. rand(5, 9), User::class);
+                $user = $this->getReference('user_' . rand(5, 9), User::class);
                 $event->addParticipant($user);
             }
 
             // Dépendance Site
-            $site = $this->getReference('site_'. rand(0, 3), Site::class);
+            $site = $this->getReference('site_' . rand(0, 3), Site::class);
             $event->setSite($site);
 
             // Dépendance Location
-            $location = $this->getReference('location_'. rand(0, 9), Location::class);
+            $location = $this->getReference('location_' . rand(0, 9), Location::class);
             $event->setLocation($location);
 
             // Dépendance User
-            $user = $this->getReference('user_'. rand(0, 4), User::class);
+            $user = $this->getReference('user_' . rand(0, 4), User::class);
             $event->setOrganizer($user);
 
 

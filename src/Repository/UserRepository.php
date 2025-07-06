@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use RuntimeException;
 use Symfony\Bridge\Doctrine\Security\User\UserLoaderInterface;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -51,17 +52,20 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     //        ;
     //    }
 
-        public function findUserById($userId): ?User
-        {
+    public function findUserById($userId): ?User
+    {
+        try {
             return $this->createQueryBuilder('u')
                 ->leftJoin('u.site', 's')
                 ->addSelect('s')
                 ->andWhere('u.id = :id')
                 ->setParameter('id', $userId)
                 ->getQuery()
-                ->getOneOrNullResult()
-            ;
+                ->getOneOrNullResult();
+        } catch (\RuntimeException $e) {
+            throw new RuntimeException("Erreur lors de la récupération de l'utilisateur", 0, $e);
         }
+    }
     /**
      * Search a user by pseudo or email in database to log in
      * @param string $identifier

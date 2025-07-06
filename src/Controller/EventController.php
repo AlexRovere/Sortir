@@ -9,18 +9,14 @@ use App\Form\EventType;
 use App\Helper\UploadFile;
 use App\Notification\Sender;
 use App\Repository\EventRepository;
-use App\Repository\GroupRepository;
 use App\Service\EventService;
-use DateTime;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Log\Logger;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[IsGranted("ROLE_USER")]
@@ -30,7 +26,7 @@ final class EventController extends AbstractController
     private readonly EntityManagerInterface $em;
     private readonly EventService $eventService;
     private readonly \DateTimeImmutable $now;
-    private LoggerInterface  $logger;
+    private LoggerInterface $logger;
 
 
     public function __construct(EventRepository $eventRepository, EntityManagerInterface $em, EventService $eventService, LoggerInterface  $logger)
@@ -141,8 +137,7 @@ final class EventController extends AbstractController
     public function detail(Event $event): Response
     {
         $user = $this->getUser();
-        if(!$this->eventService->canAccessPrivateGroup($event, $user) && !$this->isGranted("ROLE_ADMIN"))
-        {
+        if (!$this->eventService->canAccessPrivateGroup($event, $user) && !$this->isGranted("ROLE_ADMIN")) {
             throw $this->createAccessDeniedException("Accès interdit");
         }
         $inscriptionCount = $event->getParticipants()->count();
@@ -194,7 +189,7 @@ final class EventController extends AbstractController
         }
 
         return $this->render('event/update.html.twig', [
-            'event' =>$event,
+            'event' => $event,
             'readonly' =>  $readonly,
             'form' => $form,
             'canCancel' => $this->eventService->canCancel($event)
@@ -268,8 +263,7 @@ final class EventController extends AbstractController
     public function register(Event $event, Request $request, Sender $sender): Response
     {
         $user =  $this->getUser();
-        if(!$this->eventService->canAccessPrivateGroup($event, $user) && !$this->isGranted("ROLE_ADMIN"))
-        {
+        if (!$this->eventService->canAccessPrivateGroup($event, $user) && !$this->isGranted("ROLE_ADMIN")) {
             throw $this->createAccessDeniedException("Accès interdit");
         }
 
@@ -287,7 +281,7 @@ final class EventController extends AbstractController
         $event->addParticipant($user);
         try {
             $sender->sendMailRegister($user, $event);
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             $this->logger->info($e);
         }
         $this->em->persist($event);
@@ -306,8 +300,7 @@ final class EventController extends AbstractController
     public function unregister(Event $event, Request $request, Sender $sender): Response
     {
         $user = $this->getUser();
-        if(!$this->eventService->canAccessPrivateGroup($event, $user) && !$this->isGranted("ROLE_ADMIN"))
-        {
+        if (!$this->eventService->canAccessPrivateGroup($event, $user) && !$this->isGranted("ROLE_ADMIN")) {
             throw $this->createAccessDeniedException("Accès interdit");
         }
 
@@ -320,7 +313,7 @@ final class EventController extends AbstractController
         $event->removeParticipant($user);
         try {
             $sender->sendMailUnregister($user, $event);
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             $this->logger->info($e);
         }
         $this->em->persist($event);

@@ -29,6 +29,7 @@ services:
       # - ./var/cache:/var/www/html/var/cache
     environment:
       - APP_ENV=dev
+      - PHP_SESSION_PATH=/var/www/html/var/sessions
     depends_on:
       - postgres
     networks:

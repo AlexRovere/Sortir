@@ -10,6 +10,7 @@ use App\Helper\UploadFile;
 use App\Repository\StatsRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
@@ -24,12 +25,24 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class UserController extends AbstractController
 {
 
+    private readonly UserRepository $userRepository;
+    private readonly EntityManagerInterface $em;
+    private LoggerInterface $logger;
+
+
+    public function __construct(UserRepository $userRepository, EntityManagerInterface $em, LoggerInterface $logger)
+    {
+        $this->userRepository = $userRepository;
+        $this->em = $em;
+        $this->logger = $logger;
+    }
+
     #[Route('/detail/{userId}', name: 'detail', requirements: ['userId' => '\d+'])]
-    public function detail(int $userId, UserRepository $userRepository): Response
+    public function detail(int $userId): Response
     {
         $currentUser = $this->getUser();
 
-        $user = $userRepository->findUserById($userId);
+        $user = $this->userRepository->findUserById($userId);
 
         if (!$user instanceof User) {
             throw $this->createAccessDeniedException('Vous devez être connecté pour voir cette page');
@@ -50,7 +63,7 @@ final class UserController extends AbstractController
         ]);
     }
     #[Route('/update/', name: 'update')]
-    public function update(Request $request, UploadFile $uploadFile, EntityManagerInterface $em, UserPasswordHasherInterface $userPasswordHasher): Response
+    public function update(Request $request, UploadFile $uploadFile, UserPasswordHasherInterface $userPasswordHasher): Response
     {
         $user = $this->getUser();
 
@@ -79,7 +92,7 @@ final class UserController extends AbstractController
                 $userForm->addError(new FormError($e->getMessage()));
             }
 
-            $em->flush();
+            $this->em->flush();
             $this->addFlash('success', 'Utilisateur modifié avec succès');
 
             return $this->redirectToRoute('app_user_detail', ['userId' => $user->getId()]);
@@ -92,7 +105,7 @@ final class UserController extends AbstractController
     }
 
     #[Route('/import/', name: 'import')]
-    public function import(Request $request, EntityManagerInterface $em, UserPasswordHasherInterface $userPasswordHasher): Response
+    public function import(Request $request, UserPasswordHasherInterface $userPasswordHasher): Response
     {
         if ($this->getUser()) {
             if (!$this->isGranted('ROLE_ADMIN')) {
@@ -137,7 +150,7 @@ final class UserController extends AbstractController
                         $user->setFirstname($firstname);
                         $user->setPhone($phone);
 
-                        $siteEntity = $em->getRepository(Site::class)->findOneBy(['name' => $site]);
+                        $siteEntity = $this->em->getRepository(Site::class)->findOneBy(['name' => $site]);
                         if (!$siteEntity) {
                             $this->addFlash('error', "Le site'$site' n'existe pas en base");
                             continue;
@@ -148,14 +161,14 @@ final class UserController extends AbstractController
                         $user->setIsActive(true);
                         $user->setIsVerified(true);
 
-                        $em->persist($user);
+                        $this->em->persist($user);
                     } catch (\Exception $e) {
                         $this->addFlash('error', "Erreur lors de la création de l'utilisateur $pseudo : " . $e->getMessage());
                         continue;
                     }
                 }
                 fclose($handle);
-                $em->flush();
+                $this->em->flush();
                 $this->addFlash('success', 'Utilisateurs importés avec succès');
                 return $this->redirectToRoute('app_user_list');
             }
@@ -168,14 +181,14 @@ final class UserController extends AbstractController
     }
 
     #[Route('/list', name: 'list')]
-    public function list(UserRepository $userRepository): Response
+    public function list(): Response
     {
         if ($this->getUser()) {
             if (!$this->isGranted('ROLE_ADMIN')) {
                 return $this->redirectToRoute('app_event');
             }
         }
-        $users = $userRepository->findAll();
+        $users = $this->userRepository->findAll();
 
         return $this->render('user/list.html.twig', [
             'users' => $users,
@@ -184,71 +197,55 @@ final class UserController extends AbstractController
     }
 
     #[Route('/desactivate/{userId}', name: 'desactivate', requirements: ['userId' => '\d+'])]
-    public function desactivate(int $userId, UserRepository $userRepository, EntityManagerInterface $em): Response
+    public function desactivate(int $userId): Response
     {
         if (!$this->isGranted('ROLE_ADMIN')) {
             throw $this->createAccessDeniedException("Accès interdit");
         }
 
-        $user = $userRepository->findUserById($userId);
+        $user = $this->userRepository->findUserById($userId);
 
         $user->setIsActive(false);
 
-        $em->flush();
+        $this->em->flush();
         $this->addFlash('success', "Le compte de l'utilisateur {$user->getFirstname()} a bien été désactivé");
         return $this->redirectToRoute("app_user_list");
     }
 
     #[Route('/activate/{userId}', name: 'activate', requirements: ['userId' => '\d+'])]
-    public function activate(int $userId, UserRepository $userRepository, EntityManagerInterface $em): Response
+    public function activate(int $userId): Response
     {
         if (!$this->isGranted('ROLE_ADMIN')) {
             throw $this->createAccessDeniedException("Accès interdit");
         }
 
-        $user = $userRepository->findUserById($userId);
+        $user = $this->userRepository->findUserById($userId);
 
         $user->setIsActive(true);
 
-        $em->flush();
+        $this->em->flush();
         $this->addFlash('success', "Le compte de l'utilisateur {$user->getFirstname()} a bien été réactivé");
         return $this->redirectToRoute("app_user_list");
     }
 
     #[Route('/delete/{userId}', name: 'delete', requirements: ['userId' => '\d+'])]
-    public function delete(int $userId, UserRepository $userRepository, EntityManagerInterface $em): Response
+    #[IsGranted("ROLE_ADMIN")]
+    public function delete(int $userId): Response
     {
         if (!$this->isGranted('ROLE_ADMIN')) {
             throw $this->createAccessDeniedException("Accès interdit");
         }
-        $user = $userRepository->findUserById($userId);
+        try {
+            $user = $this->userRepository->findUserById($userId);
 
-        $em->remove($user);
-        $em->flush();
-        $this->addFlash('success', "Le compte de l'utilisateur {$user->getFirstname()} a bien été supprimé");
-        return $this->redirectToRoute("app_user_list");
-    }
-
-
-    #[Route('/stats', name: 'stats')]
-    #[IsGranted("ROLE_ADMIN")]
-    public function stats(StatsRepository $statsRepository): Response
-    {
-        $globalStats = $statsRepository->getGlobalStats();
-
-        $globalStatslabels = array_keys($globalStats);
-        $globalStatsvalues = array_values($globalStats);
-
-        $userBySite = $statsRepository->getUserBySite();
-
-        $userBySitelabels = array_keys($userBySite);
-        $userBySitevalues = array_values($userBySite);
-
-        return $this->render('user/stats.html.twig', [
-            'globalStatsLabels' => $globalStatslabels,
-            'globalStatsValues' => $globalStatsvalues,
-            'userBySiteLabels' => $userBySitelabels,
-            'userBySiteValues' => $userBySitevalues
-        ]);
+            $this->em->remove($user);
+            $this->em->flush();
+            $this->addFlash('success', "Le compte de l'utilisateur {$user->getFirstname()} a bien été supprimé");
+            return $this->redirectToRoute("app_user_list");
+        } catch (\RuntimeException $e) {
+            $this->logger->error('Erreur SQL : ' . $e->getMessage());
+            $this->addFlash('erreur', "Le compte de l'utilisateur n'a pas été supprimé");
+            return $this->redirectToRoute("app_user_list");
+        }
     }
 }

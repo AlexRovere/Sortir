@@ -1,118 +1,126 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}
-
-{% endblock %}
+{% block title %}{% endblock %}
 
 {% block body %}
 
-    <h1 class="py-2 text-3xl text-center font-extrabold md:text-5xl lg:text-6x text-transparent bg-clip-text bg-gradient-to-r to-emerald-600 from-sky-400">
-        {{ title }}
-    </h1>
+	<h1 class="py-2 text-3xl text-center font-extrabold md:text-5xl lg:text-6x text-transparent bg-clip-text bg-gradient-to-r to-emerald-600 from-sky-400">
+		{{ title }}
+	</h1>
 
-    <!-- Boutons 'Importer' et 'Créer user' -->
-    <div class="flex justify-between items-center">
-        <div>
-            <a href="{{ path('app_user_import') }}">
-                <button type="button"
-                        class="text-white bg-gradient-to-br from-purple-600 to-blue-500 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">
-                    Importer des utilisateurs
-                </button>
-            </a>
-        </div>
-        <div class="flex flex-row justify-center items-center gap-5 ">
-            <button type="button" class="text-white bg-gradient-to-br from-cyan-500 to-lime-500 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">
-                <a href="{{ path('app_register') }}">Créer un compte Utilisateur</a>
-            </button>
-        </div>
-    </div>
+	<!-- Boutons 'Importer' et 'Créer user' -->
+	<div class="flex justify-between items-center">
+		<div>
+			<a href="{{ path('app_user_import') }}">
+				<button type="button" class="text-white bg-gradient-to-br from-purple-600 to-blue-500 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">
+					Importer des utilisateurs
+				</button>
+			</a>
+		</div>
 
-    <!-- Tableau caché sur petits écrans -->
-    <div class="max-lg:hidden relative overflow-x-auto shadow-md sm:rounded-lg">
-        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-            <tr>
-                <th scope="col" class="px-6 py-3">
-                    Avatar
-                </th>
-                <th scope="col" class="px-6 py-3">
-                    Pseudo
-                </th>
-                <th scope="col" class="px-6 py-3">
-                    Nom
-                </th>
-                <th scope="col" class="px-6 py-3">
-                    Prénom
-                </th>
-                <th scope="col" class="px-6 py-3">
-                    Téléphone
-                </th>
-                <th scope="col" class="px-6 py-3">
-                    Email
-                </th>
-                <th scope="col" class="px-6 py-3">
-                    Actions
-                </th>
-            </tr>
-            </thead>
-            <tbody>
+		<div class="flex flex-row justify-center items-center gap-5 ">
+			<button type="button" class="text-white bg-gradient-to-br from-cyan-500 to-lime-500 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">
+				<a href="{{ path('app_register') }}">Créer un compte Utilisateur</a>
+			</button>
+		</div>
+	</div>
 
-            {% for user in users %}
-                <tr class="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700 border-gray-200">
-                    <th scope="row" class="px-6 py-4 ">
-                        <img class="w-10 h-10 rounded-full object-cover" src="{{ user.photo ? asset('uploads/' ~ user.photo ) : asset('images/default-user.png')}}" alt="Photo de profil de {{ user.name }}"/>
-                    </th>
-                    <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                        {{ user.pseudo }}
-                    </th>
-                    <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                        {{ user.firstname }}
-                    </th>
-                    <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                        {{ user.name }}
-                    </th>
-                    <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                        {{ user.phone }}
-                    </th>
-                    <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                        {{ user.email }}
-                    </th>
-                    <td class="px-6 py-4">
-                        <a href="{{ path('app_user_detail', {userId: user.id}) }} " class="text-blue-700 dark:text-blue-200">Afficher le profil</a>
-                        {% if user.isActive %}
-                            <a href="{{ path('app_user_desactivate', {userId: user.id}) }}" class="text-orange-600 dark:text-orange-200">Désactiver</a>
-                        {% else %}
-                            <a href="{{ path('app_user_activate', {userId: user.id}) }}" class="text-green-700 dark:text-green-300">Réactiver</a>
-                        {% endif %}
-                        <a href="{{ path('app_user_delete', {userId: user.id}) }}" class="text-red-700 dark:text-red-300">Supprimer</a>
-                    </td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-    </div>
+	<!-- Tableau caché sur petits écrans -->
+	<div class="max-lg:hidden relative overflow-x-auto shadow-md sm:rounded-lg">
+		<table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+			<thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+				<tr>
+					<th scope="col" class="px-6 py-3">
+						Avatar
+					</th>
+					<th scope="col" class="px-6 py-3">
+						Pseudo
+					</th>
+					<th scope="col" class="px-6 py-3">
+						Nom
+					</th>
+					<th scope="col" class="px-6 py-3">
+						Prénom
+					</th>
+					<th scope="col" class="px-6 py-3">
+						Téléphone
+					</th>
+					<th scope="col" class="px-6 py-3">
+						Email
+					</th>
+					<th scope="col" class="px-6 py-3">
+						Actions
+					</th>
+				</tr>
+			</thead>
+			<tbody>
 
-    <div class="lg:hidden">
-        {% for user in users %}
-        <ul class="p-4 text-center text-gray-700 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
-            <li class="font-bold text-gray-800 dark:text-gray-300">{{ user.pseudo }}</li>
-            <li>
-                <img class="mx-auto w-10 h-10 rounded-full object-cover" src="{{ user.photo ? asset('uploads/' ~ user.photo ) : asset('images/default-user.png')}}" alt="Photo de profil de {{ user.name }}"/>
-            </li>
-            <li>{{ user.firstname }} {{ user.name }}</li>
-            <li>{{ user.phone }}</li>
-            <li>{{ user.email }}</li>
-            <li>
-                <li><a href="{{ path('app_user_detail', {userId: user.id}) }} " class="text-blue-700 dark:text-blue-200">Afficher le profil</a><li>
-                {% if user.isActive %}
-                <li><a href="{{ path('app_user_desactivate', {userId: user.id}) }}" class="text-orange-600 dark:text-orange-200">Désactiver</a></li>
-                {% else %}
-                <li><a href="{{ path('app_user_activate', {userId: user.id}) }}" class="text-green-700 dark:text-green-300">Réactiver</a></li>
-                {% endif %}
-            <li><a href="{{ path('app_user_delete', {userId: user.id}) }}" class="text-red-700 dark:text-red-300">Supprimer</a></li>
-        </ul>
-        {% endfor %}
-    </div>
+				{% for user in users %}
+					<tr class="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700 border-gray-200">
+						<th scope="row" class="px-6 py-4 ">
+							<img class="w-10 h-10 rounded-full object-cover" src="{{ user.photo ? asset('uploads/' ~ user.photo ) : asset('images/default-user.png')}}" alt="Photo de profil de {{ user.name }}"/>
+						</th>
+						<th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+							{{ user.pseudo }}
+						</th>
+						<th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+							{{ user.firstname }}
+						</th>
+						<th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+							{{ user.name }}
+						</th>
+						<th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+							{{ user.phone }}
+						</th>
+						<th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+							{{ user.email }}
+						</th>
+						<td class="px-6 py-4">
+							<a href="{{ path('app_user_detail', {userId: user.id}) }} " class="text-blue-700 dark:text-blue-200">Afficher le profil</a>
+							{% if user.isActive %}
+								<a href="{{ path('app_user_desactivate', {userId: user.id}) }}" class="text-orange-600 dark:text-orange-200">Désactiver</a>
+							{% else %}
+								<a href="{{ path('app_user_activate', {userId: user.id}) }}" class="text-green-700 dark:text-green-300">Réactiver</a>
+							{% endif %}
+							<a href="{{ path('app_user_delete', {userId: user.id}) }}" class="text-red-700 dark:text-red-300">Supprimer</a>
+						</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+
+	<div class="lg:hidden">
+		{% for user in users %}
+			<ul class="p-4 text-center text-gray-700 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
+				<li class="font-bold text-gray-800 dark:text-gray-300">{{ user.pseudo }}</li>
+				<li>
+					<img class="mx-auto w-10 h-10 rounded-full object-cover" src="{{ user.photo ? asset('uploads/' ~ user.photo ) : asset('images/default-user.png')}}" alt="Photo de profil de {{ user.name }}"/>
+				</li>
+				<li>{{ user.firstname }}
+					{{ user.name }}</li>
+				<li>{{ user.phone }}</li>
+				<li>{{ user.email }}</li>
+				<li></li>
+				<li>
+					<a href="{{ path('app_user_detail', {userId: user.id}) }} " class="text-blue-700 dark:text-blue-200">Afficher le profil</a>
+				</li>
+				<li>
+					{% if user.isActive %}
+						<li>
+							<a href="{{ path('app_user_desactivate', {userId: user.id}) }}" class="text-orange-600 dark:text-orange-200">Désactiver</a>
+						</li>
+					{% else %}
+						<li>
+							<a href="{{ path('app_user_activate', {userId: user.id}) }}" class="text-green-700 dark:text-green-300">Réactiver</a>
+						</li>
+					{% endif %}
+				</li>
+				<li>
+					<a href="{{ path('app_user_delete', {userId: user.id}) }}" class="text-red-700 dark:text-red-300">Supprimer</a>
+				</li>
+			</ul>
+		{% endfor %}
+	</div>
 
 {% endblock %}
-
